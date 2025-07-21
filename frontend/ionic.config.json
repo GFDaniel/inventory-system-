@@ -1,0 +1,7 @@
+{
+  "name": "inventory-frontend",
+  "integrations": {
+    "@ionic/angular": {}
+  },
+  "type": "angular"
+}

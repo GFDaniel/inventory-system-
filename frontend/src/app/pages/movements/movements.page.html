@@ -1,0 +1,96 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Movimientos de Inventario</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Movimientos</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <!-- Formulario para registrar movimiento -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Registrar Movimiento</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <form [formGroup]="movementForm" (ngSubmit)="onSubmit()">
+        <ion-item>
+          <ion-label position="stacked">Producto *</ion-label>
+          <ion-select formControlName="product" placeholder="Selecciona un producto" (ionChange)="onProductChange()">
+            <ion-select-option *ngFor="let product of products" [value]="product.id">
+              {{ product.name }} (Stock: {{ product.stock }})
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+        <div class="error-message" *ngIf="movementForm.get('product')?.invalid && movementForm.get('product')?.touched">
+          Debes seleccionar un producto
+        </div>
+
+        <ion-item>
+          <ion-label position="stacked">Tipo de Movimiento *</ion-label>
+          <ion-select formControlName="movement_type" placeholder="Selecciona el tipo">
+            <ion-select-option value="IN">Entrada (Aumenta stock)</ion-select-option>
+            <ion-select-option value="OUT">Salida (Reduce stock)</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <div class="error-message" *ngIf="movementForm.get('movement_type')?.invalid && movementForm.get('movement_type')?.touched">
+          Debes seleccionar el tipo de movimiento
+        </div>
+
+        <ion-item>
+          <ion-label position="stacked">Cantidad *</ion-label>
+          <ion-input type="number" formControlName="quantity" placeholder="0"></ion-input>
+        </ion-item>
+        <div class="error-message" *ngIf="movementForm.get('quantity')?.invalid && movementForm.get('quantity')?.touched">
+          La cantidad es requerida y debe ser mayor a 0
+        </div>
+
+        <div *ngIf="selectedProduct && movementForm.get('movement_type')?.value === 'OUT'" class="stock-warning">
+          <ion-chip color="warning">
+            <ion-icon name="warning-outline"></ion-icon>
+            <ion-label>Stock disponible: {{ selectedProduct.stock }}</ion-label>
+          </ion-chip>
+        </div>
+
+        <ion-item>
+          <ion-label position="stacked">Descripción</ion-label>
+          <ion-textarea formControlName="description" placeholder="Descripción del movimiento (opcional)"></ion-textarea>
+        </ion-item>
+
+        <ion-button expand="block" type="submit" [disabled]="!movementForm.valid">
+          Registrar Movimiento
+        </ion-button>
+      </form>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Lista de movimientos -->
+  <ion-card *ngFor="let movement of movements">
+    <ion-card-content>
+      <div class="movement-header">
+        <h3>{{ movement.product_name }}</h3>
+        <ion-chip [color]="getMovementTypeColor(movement.movement_type)">
+          <ion-icon [name]="movement.movement_type === 'IN' ? 'arrow-down-outline' : 'arrow-up-outline'"></ion-icon>
+          <ion-label>{{ getMovementTypeText(movement.movement_type) }}</ion-label>
+        </ion-chip>
+      </div>
+      
+      <div class="movement-details">
+        <p><strong>Cantidad:</strong> {{ movement.quantity }}</p>
+        <p *ngIf="movement.description"><strong>Descripción:</strong> {{ movement.description }}</p>
+        <p><strong>Usuario:</strong> {{ movement.user_name }}</p>
+        <p><strong>Fecha:</strong> {{ movement.created_at | date:'dd/MM/yyyy HH:mm' }}</p>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <div *ngIf="movements.length === 0" class="empty-state">
+    <ion-icon name="swap-horizontal-outline" size="large"></ion-icon>
+    <h2>No hay movimientos</h2>
+    <p>Registra tu primer movimiento de inventario</p>
+  </div>
+</ion-content>
